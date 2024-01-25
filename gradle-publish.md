@@ -258,10 +258,26 @@ publishing {
 To verify this step, run `./gradlew generatePomFileForMavenJavaPublication`. If you look
 in the `build/publications/mavenJava` folder of any published module, you can find and inspect the generated POM file.
 
-*(Note: If you have ever created a multi-module project in Maven instead of Gradle, those projects have a root POM
+**Maven vs. Gradle Note**
+
+If you have ever created a multi-module project in Maven instead of Gradle, those projects have a root POM
 with a list of modules and also any common elements; the POM for each module also references the root POM as its parent.
 This process will instead create a standalone POM for each module. However, that is perfectly fine here;
-the modules will still be released together.)*
+the modules will still be released together.
+
+**Test Fixtures Note**
+
+If any of your published modules use the `java-test-fixtures` plugin for testing purposes,
+you will also need to add this snippet to your convention plugin:
+
+```kotlin
+// Don't publish test fixtures.
+pluginManager.withPlugin("java-test-fixtures") {
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+}
+```
 
 ### Step 7: Sign Files
 
@@ -477,6 +493,13 @@ java {
 
 tasks.javadoc {
     (options as StandardJavadocDocletOptions).addBooleanOption("Werror", true)
+}
+
+// Don't publish test fixtures.
+pluginManager.withPlugin("java-test-fixtures") {
+    val javaComponent = components["java"] as AdhocComponentWithVariants
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+    javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 }
 
 group = "io.github.mikewacker.drift"
