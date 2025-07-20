@@ -310,7 +310,7 @@ To verify that the key has been distributed, you can search for your key by its 
 4. Check the script output to ensure that the `curl` request succeeded with a 200 response code.
 5. In the Central Portal, check that a validated deployment is shown on the [deployments](https://central.sonatype.com/publishing/deployments) page.
 
-From here, you can either drop or publish the deployment.
+From there, you can either drop or publish the deployment.
 
 > NOTE:
 > This workflow does not support `-SNAPSHOT` releases.
