@@ -319,6 +319,7 @@ We will create a GitHub workflow that will be triggered when a GitHub release is
 
 1. Add this workflow (`.github/workflows/publish.yml`) to your repository (updating action versions as you see fit):
 
+    <!-- {% raw %} -->
     ```yaml
     name: Publish
     on:
@@ -350,6 +351,7 @@ We will create a GitHub workflow that will be triggered when a GitHub release is
               ORG_GRADLE_PROJECT_portalUsername: ${{ secrets.PORTAL_USERNAME }}
               ORG_GRADLE_PROJECT_portalPassword: ${{ secrets.PORTAL_PASSWORD }}
     ```
+    <!-- {% endraw %} -->
 
 2. Navigate to the secrets page of your repository: Settings > Secrets and variables > Actions
 3. Add the following repository secrets (not environment secrets): `SIGNING_KEY`, `SIGNING_PASSWORD`, `PORTAL_USERNAME`, and `PORTAL_PASSWORD`.
@@ -479,6 +481,7 @@ curl --request POST \
 
 `.github/workflows/publish.yml`:
 
+<!-- {% raw %} -->
 ```yaml
 name: Publish
 on:
@@ -510,3 +513,4 @@ jobs:
           ORG_GRADLE_PROJECT_portalUsername: ${{ secrets.PORTAL_USERNAME }}
           ORG_GRADLE_PROJECT_portalPassword: ${{ secrets.PORTAL_PASSWORD }}
 ```
+<!-- {% endraw %} -->
