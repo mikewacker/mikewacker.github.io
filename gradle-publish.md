@@ -12,20 +12,56 @@ You've consumed many third-party libraries from Maven Central. What if you want 
 ## 1. Fulfill the Requirements
 
 To publish to Maven Central, your project must fulfill certain requirements.
+We will create (most of) a `buildSrc` plugin that fulfills these requirements.
 
-- We will create (most of) a `buildSrc` plugin that fulfills these requirements. (e.g., `io.github.mikewacker.darc.java-publish.gradle.kts`)
-    - The only part missing will be the `publications > repositories` block. This part will be added later.
-- To publish a project, replace the `java-library` plugin with this plugin. (e.g., `id("io.github.mikewacker.darc.java-publish")`)
+1. If `buildSrc` does not exist, set it up.
 
-Let's start with the `plugins` block of our plugin:
+    `buildSrc/settings.gradle.kts`:
+
+    ```kotlin
+    rootProject.name = "buildSrc"
+    ```
+
+    `buildSrc/build.gradle.kts`:
+
+    ```kotlin
+    plugins {
+        `kotlin-dsl`
+    }
+    
+    repositories {
+        gradlePluginPortal()
+    }
+    ```
+
+2. Create a plugin with this code initially.
+
+    `buildSrc/src/main/kotlin/buildlogic.java-publish.gradle.kts`:
+
+    ```kotlin
+    plugins {
+        `java-library`
+        `maven-publish`
+        signing
+    }
+    ```
+
+To consume this plugin in a project, replace the `java-library` plugin with this plugin:
 
 ```kotlin
 plugins {
-    `java-library`
-    `maven-publish`
-    signing
+    id("buildlogic.java-publish") // replaces `java-library`
 }
 ```
+
+**Verification**
+
+1. Consume this plugin in each project that will be published.
+2. `./gradlew build`
+
+**References**
+
+Gradle: [Sharing Build Logic using `buildSrc`](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)
 
 ### Supply Javadoc and Sources
 
@@ -53,6 +89,9 @@ tasks.javadoc {
 
 1. `./gradlew build`
 2. Verify that `build/libs` contains a sources JAR (`-sources.jar`) and a Javadoc JAR (`-javadoc.jar`)
+
+> NOTE:
+> You may need to fix Javadoc warnings if you have `Werror` set.
 
 **References**
 
@@ -378,7 +417,7 @@ We will create a GitHub workflow that will be triggered when a GitHub release is
 
 Source: <https://github.com/mikewacker/darc>
 
-`buildSrc/src/main/kotlin/io.github.mikewacker.darc.java-publish.gradle.kts`:
+`buildSrc/src/main/kotlin/buildlogic.java-publish.gradle.kts`:
 
 ```kotlin
 plugins {
