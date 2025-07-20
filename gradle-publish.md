@@ -61,7 +61,8 @@ plugins {
 
 **References**
 
-Gradle: [Sharing Build Logic using `buildSrc`](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)
+- Gradle: [Sharing Build Logic using `buildSrc`](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)
+- `gradle init` for the latest release of Gradle
 
 ### Supply Javadoc and Sources
 
