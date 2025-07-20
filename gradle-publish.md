@@ -6,7 +6,7 @@ You've consumed many third-party libraries from Maven Central. What if you want 
 - Mistakes happen. This guide shows you how to verify each step&mdash;instead of hoping that everything "just works" at the end.
 - This guide also covers automating releases with a GitHub workflow.
 
-> [!NOTE]
+> NOTE:
 > This guide uses Gradle 8 with the Kotlin DSL.
 
 ## 1. Fulfill the Requirements
@@ -74,7 +74,7 @@ The POM must have the following metadata:
 
 Add this code to your plugin, filling in the template:
 
-> [!NOTE]
+> NOTE:
 > This template is for a GitHub repository. The Maven Central documentation can help you adapt it to other options.
 
 ```kotlin
@@ -154,7 +154,7 @@ When you build the code, the libraries will also have version numbers in their f
 
 To verify that the key has been distributed, you can search for your key by its ID at <https://keyserver.ubuntu.com/>.
 
-> [!NOTE]
+> NOTE:
 > This key expires in 2 years, but you can extend the expiration and redistribute the updated key to the key server.
 
 **Sign a Publication**
@@ -177,7 +177,7 @@ signing.password=[passphrase]
 signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
 ```
 
-> [!WARNING]
+> WARNING:
 > It may not be feasible to securely provide a keyring file to a CI server. We'll switch to an in-memory key later.
 
 **Verification**
@@ -201,7 +201,7 @@ signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
 
 ## 2. Publish Manually
 
-> [!IMPORTANT]
+> IMPORTANT:
 > OSSRH reached end of life on June 30, 2025. The `maven-publish` plugin does not yet support the new Portal API.
 
 ### Register a Namespace
@@ -216,7 +216,7 @@ signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
 
 ### Publish to Maven Central
 
-> [!NOTE]
+> NOTE:
 > Don't worry about making mistakes. You can drop a deployment in the Central Portal if you make a mistake.
 
 1. Add this code to the `publications` block of your plugin:
@@ -250,7 +250,7 @@ curl --request POST \
     https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/[namespace]
 ```
 
-> [!IMPORTANT]
+> IMPORTANT:
 > For security reasons, `--include` is used instead of `--verbose`; the output will not show the `Authorization` header.
 
 3. [Create a token](https://central.sonatype.org/publish/generate-portal-token/) in the Central Portal.
@@ -271,7 +271,7 @@ export ORG_GRADLE_PROJECT_portalPassword=[password]
 
 From here, you can either drop or publish the deployment.
 
-> [!NOTE]
+> NOTE:
 > This workflow does not support `-SNAPSHOT` releases.
 
 **References**
@@ -360,10 +360,10 @@ jobs:
 2. In the Actions tab of the repository, check the workflow result.
 3. In the Central Portal, check that a validated deployment is shown on the [deployments](https://central.sonatype.com/publishing/deployments) page.
 
-> [!IMPORTANT]
+> IMPORTANT:
 > The workflow may "succeed" if `./publish-maven-central.sh` fails; you will have to examine the output for this action.
 
-> [!NOTE]
+> NOTE:
 > Since the workflow includes `workflow_dispatch`, you can rerun it manually if something goes wrong.
 
 **References**
