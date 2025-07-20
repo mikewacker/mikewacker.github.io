@@ -161,21 +161,21 @@ To verify that the key has been distributed, you can search for your key by its 
 
 1. Add this code to your plugin:
 
-```kotlin
-signing {
-    sign(publishing.publications["mavenJava"])
-}
-```
+    ```kotlin
+    signing {
+        sign(publishing.publications["mavenJava"])
+    }
+    ```
 
 2. Export your key to a secret keyring file: `gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg`
 3. Add these properties to `~/.gradle/gradle.properties`, filling in the template:
     - For `signing.keyId`, use the **last 8** symbols of the key ID.
 
-```text
-signing.keyId=[key-id-last-8]
-signing.password=[passphrase]
-signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
-```
+    ```text
+    signing.keyId=[key-id-last-8]
+    signing.password=[passphrase]
+    signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
+    ```
 
 > WARNING:
 > It may not be feasible to securely provide a keyring file to a CI server. We'll switch to an in-memory key later.
@@ -221,45 +221,46 @@ signing.secretKeyRingFile=[home-dir]/.gnupg/secring.gpg
 
 1. Add this code to the `publications` block of your plugin:
 
-```kotlin
-    repositories {
-        maven {
-            name = "ossrhStagingApi"
-            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-            credentials {
-                val portalUsername: String? by project
-                val portalPassword: String? by project
-                username = portalUsername
-                password = portalPassword
+    ```kotlin
+        repositories {
+            maven {
+                name = "ossrhStagingApi"
+                url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+                credentials {
+                    val portalUsername: String? by project
+                    val portalPassword: String? by project
+                    username = portalUsername
+                    password = portalPassword
+                }
             }
         }
-    }
-```
+    ```
+
 2. Add this script (`publish-maven-central.sh`) to the root directory of your repository, filling in the template:
 
-```shell
-#!/usr/bin/env bash
-# Publish to OSSRH Staging API.
-./gradlew publish
+    ```shell
+    #!/usr/bin/env bash
+    # Publish to OSSRH Staging API.
+    ./gradlew publish
+    
+    # Transfer from OSSRH Staging API to Central Publisher Portal.
+    BEARER=$(printf "$ORG_GRADLE_PROJECT_portalUsername:$ORG_GRADLE_PROJECT_portalPassword" | base64)
+    curl --request POST \
+        --include \
+        --header "Authorization: Bearer $BEARER" \
+        https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/[namespace]
+    ```
 
-# Transfer from OSSRH Staging API to Central Publisher Portal.
-BEARER=$(printf "$ORG_GRADLE_PROJECT_portalUsername:$ORG_GRADLE_PROJECT_portalPassword" | base64)
-curl --request POST \
-    --include \
-    --header "Authorization: Bearer $BEARER" \
-    https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/[namespace]
-```
-
-> IMPORTANT:
-> For security reasons, `--include` is used instead of `--verbose`; the output will not show the `Authorization` header.
+    > IMPORTANT:
+    > For security reasons, `--include` is used instead of `--verbose`; this option will not display the `Authorization` header in the output.
 
 3. [Create a token](https://central.sonatype.org/publish/generate-portal-token/) in the Central Portal.
 4. Add these environment variable to `~/.gradle/gradle.env`, filling in the template:
 
-```shell
-export ORG_GRADLE_PROJECT_portalUsername=[username]
-export ORG_GRADLE_PROJECT_portalPassword=[password]
-```
+    ```shell
+    export ORG_GRADLE_PROJECT_portalUsername=[username]
+    export ORG_GRADLE_PROJECT_portalPassword=[password]
+    ```
 
 **Verification**
 
@@ -285,22 +286,22 @@ From here, you can either drop or publish the deployment.
 
 1. Replace the `signing` block of your plugin with this code:
 
-```kotlin
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications["mavenJava"])
-}
-```
+    ```kotlin
+    signing {
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
+    }
+    ```
 
 2. Export an in-memory key: `gpg --armor --export-secret-keys [keyId] > ~/.gradle/seckey.asc`
 3. Add these environment variables to `~/.gradle/gradle.env`, filling in the template:
 
-```shell
-export ORG_GRADLE_PROJECT_signingKey=$(cat ~/.gradle/seckey.asc)
-export ORG_GRADLE_PROJECT_signingPassword=[passphrase]
-```
+    ```shell
+    export ORG_GRADLE_PROJECT_signingKey=$(cat ~/.gradle/seckey.asc)
+    export ORG_GRADLE_PROJECT_signingPassword=[passphrase]
+    ```
 
 **Verification**
 
@@ -318,37 +319,37 @@ We will create a GitHub workflow that will be triggered when a GitHub release is
 
 1. Add this workflow (`.github/workflows/publish.yml`) to your repository (updating action versions as you see fit):
 
-```yaml
-name: Publish
-on:
-  release:
-    types: [created]
-  workflow_dispatch:
-
-jobs:
-  publish:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup Java
-        uses: actions/setup-java@v4.7.1
-        with:
-          java-version: 21
-          distribution: temurin
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.4.1
-
-      - name: Publish
-        run: ./publish-maven-central.sh
-        env:
-          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
-          ORG_GRADLE_PROJECT_portalUsername: ${{ secrets.PORTAL_USERNAME }}
-          ORG_GRADLE_PROJECT_portalPassword: ${{ secrets.PORTAL_PASSWORD }}
-```
+    ```yaml
+    name: Publish
+    on:
+      release:
+        types: [created]
+      workflow_dispatch:
+    
+    jobs:
+      publish:
+        runs-on: ubuntu-24.04
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4.2.2
+    
+          - name: Setup Java
+            uses: actions/setup-java@v4.7.1
+            with:
+              java-version: 21
+              distribution: temurin
+    
+          - name: Setup Gradle
+            uses: gradle/actions/setup-gradle@v4.4.1
+    
+          - name: Publish
+            run: ./publish-maven-central.sh
+            env:
+              ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+              ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+              ORG_GRADLE_PROJECT_portalUsername: ${{ secrets.PORTAL_USERNAME }}
+              ORG_GRADLE_PROJECT_portalPassword: ${{ secrets.PORTAL_PASSWORD }}
+    ```
 
 2. Navigate to the secrets page of your repository: Settings > Secrets and variables > Actions
 3. Add the following repository secrets (not environment secrets): `SIGNING_KEY`, `SIGNING_PASSWORD`, `PORTAL_USERNAME`, and `PORTAL_PASSWORD`.
